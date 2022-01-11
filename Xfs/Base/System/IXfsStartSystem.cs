@@ -11,6 +11,7 @@ namespace Xfs
         Type Type();
         void Run(object o);
     }
+
 	public abstract class XfsStartSystem<T> : IXfsStartSystem
 	{
 		public void Run(object o)
@@ -25,4 +26,5 @@ namespace Xfs
 
 		public abstract void Start(T self);
 	}
+
 }

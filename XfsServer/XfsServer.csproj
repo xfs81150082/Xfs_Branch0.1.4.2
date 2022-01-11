@@ -11,4 +11,8 @@
     <ProjectReference Include="..\Xfs\Xfs.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Handler\Heart\" />
+  </ItemGroup>
+
 </Project>

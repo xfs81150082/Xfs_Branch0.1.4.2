@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -7,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace Xfs
 {
-     public struct AsyncXfsVoidMethodBuilder
+    public struct AsyncXfsVoidMethodBuilder
     {
         private Action moveNext;
 
         // 1. Static Create method.
-        //[DebuggerHidden]
+        [DebuggerHidden]
         public static AsyncXfsVoidMethodBuilder Create()
         {
             AsyncXfsVoidMethodBuilder builder = new AsyncXfsVoidMethodBuilder();
@@ -23,21 +24,21 @@ namespace Xfs
         public XfsVoid Task => default;
 
         // 3. SetException
-        //[DebuggerHidden]
+        [DebuggerHidden]
         public void SetException(Exception exception)
         {
             //Log.Error(exception);
         }
 
         // 4. SetResult
-        //[DebuggerHidden]
+        [DebuggerHidden]
         public void SetResult()
         {
             // do nothing
         }
 
         // 5. AwaitOnCompleted
-        //[DebuggerHidden]
+        [DebuggerHidden]
         public void AwaitOnCompleted<TAwaiter, TStateMachine>(ref TAwaiter awaiter, ref TStateMachine stateMachine)
             where TAwaiter : INotifyCompletion
             where TStateMachine : IAsyncStateMachine
@@ -53,7 +54,7 @@ namespace Xfs
         }
 
         // 6. AwaitUnsafeOnCompleted
-        //[DebuggerHidden]
+        [DebuggerHidden]
         //[SecuritySafeCritical]
         public void AwaitUnsafeOnCompleted<TAwaiter, TStateMachine>(ref TAwaiter awaiter, ref TStateMachine stateMachine)
             where TAwaiter : ICriticalNotifyCompletion
@@ -70,14 +71,14 @@ namespace Xfs
         }
 
         // 7. Start
-        //[DebuggerHidden]
+        [DebuggerHidden]
         public void Start<TStateMachine>(ref TStateMachine stateMachine) where TStateMachine : IAsyncStateMachine
         {
             stateMachine.MoveNext();
         }
 
         // 8. SetStateMachine
-        //[DebuggerHidden]
+        [DebuggerHidden]
         public void SetStateMachine(IAsyncStateMachine stateMachine)
         {
         }

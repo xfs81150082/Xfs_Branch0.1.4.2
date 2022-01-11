@@ -15,5 +15,6 @@ namespace Xfs
         {
             this.Type = type;
         }
+
     }
 }

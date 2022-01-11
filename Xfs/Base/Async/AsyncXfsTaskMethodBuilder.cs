@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -131,7 +132,7 @@ namespace Xfs
         private Action moveNext;
 
         // 1. Static Create method.
-        //[DebuggerHidden]
+        [DebuggerHidden]
         public static XfsAsyncTaskMethodBuilder<T> Create()
         {
             var builder = new XfsAsyncTaskMethodBuilder<T>();
@@ -139,7 +140,7 @@ namespace Xfs
         }
 
         // 2. TaskLike Task property.
-        //[DebuggerHidden]
+        [DebuggerHidden]
         public XfsTask<T> Task
         {
             get
@@ -160,7 +161,7 @@ namespace Xfs
         }
 
         // 3. SetException
-        //[DebuggerHidden]
+        [DebuggerHidden]
         public void SetException(Exception exception)
         {
             if (this.tcs == null)
@@ -179,7 +180,7 @@ namespace Xfs
         }
 
         // 4. SetResult
-        //[DebuggerHidden]
+        [DebuggerHidden]
         public void SetResult(T ret)
         {
             if (moveNext == null)
@@ -198,7 +199,7 @@ namespace Xfs
         }
 
         // 5. AwaitOnCompleted
-        //[DebuggerHidden]
+        [DebuggerHidden]
         public void AwaitOnCompleted<TAwaiter, TStateMachine>(ref TAwaiter awaiter, ref TStateMachine stateMachine)
                 where TAwaiter : INotifyCompletion
                 where TStateMachine : IAsyncStateMachine
@@ -219,8 +220,8 @@ namespace Xfs
         }
 
         // 6. AwaitUnsafeOnCompleted
-        //[DebuggerHidden]
         //[SecuritySafeCritical]
+        [DebuggerHidden]
         public void AwaitUnsafeOnCompleted<TAwaiter, TStateMachine>(ref TAwaiter awaiter, ref TStateMachine stateMachine)
                 where TAwaiter : ICriticalNotifyCompletion
                 where TStateMachine : IAsyncStateMachine

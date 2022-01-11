@@ -33,31 +33,28 @@ namespace XfsServer
 
                 ///服务器加载组件
                 XfsGame.XfsSence.Type = XfsSenceType.XfsServer;
+                XfsGame.XfsSence.AddComponent<XfsTimerComponent>();
+                
                 XfsGame.XfsSence.AddComponent<XfsStartConfigComponent>();                         ///加载组件 : 操作号码
                 XfsGame.XfsSence.AddComponent<XfsOpcodeTypeComponent>();                          ///加载组件 : 信息组件
                 XfsGame.XfsSence.AddComponent<XfsMessageDispatcherComponent>();                   ///加载组件 : 信息分检组件
+                XfsGame.XfsSence.AddComponent<XfsNetOuterComponent>();                            ///加载组件 : 通信组件-外网消息组件
 
 
-
-                XfsGame.XfsSence.AddComponent<XfsNetOuterComponent>();                       ///加载组件 : 通信组件
-
-
-
-                //XfsGame.XfsSence.AddComponent<XfsNetSocketComponent>().ServerInit();              ///加载组件 : 通信组件
-
-                //XfsGame.XfsSence.AddComponent<XfsNetOuterComponent>();                          ///加载组件 : 通信组件
-
-                //XfsGame.XfsSence.AddComponent<XfsTcpServerNet>();                               ///加载组件 : 通信组件Server
-
-                XfsGame.XfsSence.AddComponent<XfsTimerComponent>();
-
-                //XfsGame.XfsSence.AddComponent<XfsMessageHandlerComponent>();
+                //XfsGame.XfsSence.AddComponent<NetInnerComponent, string>(innerConfig.Address);  //// 内网消息组件
+                //XfsGame.XfsSence.AddComponent<XfsMessageHandlerComponent>();                    ///加载组件 : 信息处理组件
 
 
-                // 根据不同的AppType添加不同的组件
-                //OuterConfig outerConfig = startConfig.GetComponent<OuterConfig>();
-                //InnerConfig innerConfig = startConfig.GetComponent<InnerConfig>();
-                //ClientConfig clientConfig = startConfig.GetComponent<ClientConfig>();
+                XfsGame.XfsSence.AddComponent<XfsServerTest>();                                       ///服务器加载组件 : 通信组件Server
+                
+
+                //XfsGame.XfsSence.AddComponent<TestEntity1>();                                     ///服务器加载组件 : 通信组件Server
+
+
+                //XfsGame.XfsSence.AddComponent<XfsConfigComponent>();        //// 配置管理
+                //OuterConfig outerConfig = XfsGame.XfsSence.GetComponent<XfsStartConfigComponent>().GetComponent<OuterConfig>();                // 根据不同的AppType添加不同的组件
+                //InnerConfig innerConfig = XfsGame.XfsSence.GetComponent<XfsStartConfigComponent>().GetComponent<InnerConfig>();
+                //ClientConfig clientConfig = XfsGame.XfsSence.GetComponent<XfsStartConfigComponent>().GetComponent<ClientConfig>();
 
                 //// 发送普通actor消息
                 //XfsGame.XfsSence.AddComponent<ActorMessageSenderComponent>();
@@ -70,22 +67,13 @@ namespace XfsServer
                 //// 这两个组件是处理actor消息使用的
                 //XfsGame.XfsSence.AddComponent<MailboxDispatcherComponent>();
                 //XfsGame.XfsSence.AddComponent<ActorMessageDispatcherComponent>();
-                //// 内网消息组件
-                //XfsGame.XfsSence.AddComponent<NetInnerComponent, string>(innerConfig.Address);
-                //// 外网消息组件
-                //XfsGame.XfsSence.AddComponent<NetOuterComponent, string>(outerConfig.Address);
-
 
                 //// manager server组件，用来管理其它进程使用
                 //XfsGame.XfsSence.AddComponent<AppManagerComponent>();
-                //XfsGame.XfsSence.AddComponent<GateSessionKeyComponent>();
-                //// 配置管理
-                //XfsGame.XfsSence.AddComponent<XfsConfigComponent>();
+                //XfsGame.XfsSence.AddComponent<GateSessionKeyComponent>();                
 
 
-                //XfsGame.XfsSence.AddComponent<TestEntity1>();                                     ///服务器加载组件 : 通信组件Server
 
-                XfsGame.XfsSence.AddComponent<XfsServerTest>();                                       ///服务器加载组件 : 通信组件Server
 
 
                 Console.WriteLine(XfsTimeHelper.CurrentTime() + " ThreadId: " + Thread.CurrentThread.ManagedThreadId);

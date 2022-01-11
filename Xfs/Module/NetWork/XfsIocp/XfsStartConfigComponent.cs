@@ -31,7 +31,12 @@ namespace Xfs
         {            
 			Instance = this;
 
-			this.StartConfig = new XfsStartConfig() { SenceType = XfsSenceType.XfsServer, ServerIP = "127.0.0.1", Port = 4001, MaxLiningCount = 10 };
+			this.StartConfig = new XfsStartConfig() { ServerIP = "127.0.0.1", Port = 4002, MaxLiningCount = 10 };
+			//this.StartConfig.SenceType = (this.Parent as XfsSence).Type;
+			this.StartConfig.SenceType = XfsGame.XfsSence.Type;
+
+			Console.WriteLine(XfsTimeHelper.CurrentTime() + " 38-XfsStartConfigComponent：SenceType: " + this.StartConfig.SenceType);
+
 			this.configDict.Add((int)this.StartConfig.SenceType, this.StartConfig);
 			this.StartConfigs.Add(this.StartConfig);
 

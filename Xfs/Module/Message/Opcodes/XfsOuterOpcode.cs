@@ -42,11 +42,11 @@ namespace Xfs
     public static partial class XfsOuterOpcode
     {
         #region
-        public const int C4S_Ping = 111;
-        public const int S4C_Ping = 112;
-
         public const int C2S_TestRequest = 101;
         public const int S2C_TestResponse = 102;
+
+        public const int C4S_Ping = 111;
+        public const int S4C_Ping = 112;
 
         public const int C4S_Heart = 141;
         public const int S4C_Heart = 142;

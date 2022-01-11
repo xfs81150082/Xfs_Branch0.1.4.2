@@ -26,5 +26,6 @@ namespace Xfs
             }
             return (T)Enum.Parse(typeof(T), str);
         }
+
     }
 }

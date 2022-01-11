@@ -11,7 +11,7 @@ namespace Xfs
             if (XfsStartConfigComponent.Instance.StartConfig == null) return;
 			if (XfsStartConfigComponent.Instance.StartConfig.ServerIP == null) return;
 			if (XfsStartConfigComponent.Instance.StartConfig.Port == 0) return;
-			self.MessageDispatcher = new XfsOuterMessageDispatcher();
+
 			self.ArgsInit(XfsStartConfigComponent.Instance.StartConfig.ServerIP, XfsStartConfigComponent.Instance.StartConfig.Port, XfsStartConfigComponent.Instance.StartConfig.MaxLiningCount);
 
 		}
@@ -26,7 +26,7 @@ namespace Xfs
 			if (XfsStartConfigComponent.Instance.StartConfig == null) return;
 			if (XfsStartConfigComponent.Instance.StartConfig.ServerIP == null) return;
 			if (XfsStartConfigComponent.Instance.StartConfig.Port == 0) return;
-			self.MessageDispatcher = new XfsOuterMessageDispatcher();
+
 			self.ArgsInit(XfsStartConfigComponent.Instance.StartConfig.ServerIP, XfsStartConfigComponent.Instance.StartConfig.Port, XfsStartConfigComponent.Instance.StartConfig.MaxLiningCount);
 
 		}
@@ -37,7 +37,7 @@ namespace Xfs
 	{
 		public override void Load(XfsNetOuterComponent self)
 		{
-			self.MessageDispatcher = new XfsOuterMessageDispatcher();
+			self.ArgsInit();
 		}
 	}
 

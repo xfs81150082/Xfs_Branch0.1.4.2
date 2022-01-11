@@ -9,16 +9,13 @@ using Xfs;
 
 namespace XfsServer
 {
-    class Program
+    class MainProgram
     {
         static void Main(string[] args)
         {
-            //new XfsGateInit().Start();
-            //new TestIocp().Init();
-
             XfsComponentFactory.Create<XfsServerInit>().Start();
 
-        }
 
+        }
     }
 }

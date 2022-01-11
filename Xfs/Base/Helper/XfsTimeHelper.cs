@@ -9,22 +9,23 @@ namespace Xfs
     public static class XfsTimeHelper
     {
 		private static readonly long epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).Ticks;
-		/// <summary>
-		/// 客户端时间
-		/// </summary>
-		/// <returns></returns>
+		
+        /// 客户端时间		
 		public static long ClientNow()
 		{
 			return (DateTime.UtcNow.Ticks - epoch) / 10000;
 		}
+
 		public static long ClientNowSeconds()
 		{
 			return (DateTime.UtcNow.Ticks - epoch) / 10000000;
 		}
+
 		public static long Now()
 		{
 			return ClientNow();
 		}
+
         ///获得服务器当前时间
         public static string CurrentMoveTime()
         {
@@ -32,6 +33,7 @@ namespace Xfs
             cuurentTime = DateTime.Now.ToString("yyyyMMddHHmmssffff");
             return cuurentTime;
         }
+
         ///获得服务器当前时间
         public static string CurrentTime()
         {
@@ -39,6 +41,7 @@ namespace Xfs
             cuurentTime = DateTime.Now.ToString("yyyyMMdd HH:mm:ss");
             return cuurentTime;
         }
+
         ///获得服务器当前时间
         public static string IdCurrentTime()
         {
@@ -46,5 +49,6 @@ namespace Xfs
             cuurentTime = DateTime.Now.ToString("yyyyMMddHHmmss");
             return cuurentTime;
         }
+
     }
 }

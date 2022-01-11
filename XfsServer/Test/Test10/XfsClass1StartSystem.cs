@@ -8,9 +8,9 @@ using Xfs;
 namespace XfsServer
 {
     [XfsObjectSystem]
-    public class XfsClass1StartSystem : XfsStartSystem<Class1>
+    public class XfsClass1StartSystem : XfsStartSystem<Test11Class1>
     {
-        public override void Start(Class1 self)
+        public override void Start(Test11Class1 self)
         {
             Console.WriteLine(XfsTimeHelper.CurrentTime() + " Class1 Start 运行成功: " + self.test1);
         }

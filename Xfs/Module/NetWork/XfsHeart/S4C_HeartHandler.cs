@@ -5,19 +5,17 @@ using System.Text;
 using System.Threading.Tasks;
 using Xfs;
 
-namespace XfsServer
+namespace Xfs
 {
     [XfsMessageHandler(XfsSenceType.XfsServer)]
     public class S4C_HeartHandler : XfsAMRpcHandler<C4S_Heart, S4C_Heart>
     {
         protected override void Run(XfsSession session, C4S_Heart message, Action<S4C_Heart> reply)
         {
+            session.GetComponent<XfsHeartComponent>().CdCount = 0;
 
-
-
-
-
-
+            Console.WriteLine(XfsTimeHelper.CurrentTime() + " " + this.GetType() + " 17. session: " + session.Socket.LocalEndPoint);
+            Console.WriteLine(XfsTimeHelper.CurrentTime() + " " + this.GetType() + " 18. CdCount: " + session.GetComponent<XfsHeartComponent>().CdCount);
         }
 
 

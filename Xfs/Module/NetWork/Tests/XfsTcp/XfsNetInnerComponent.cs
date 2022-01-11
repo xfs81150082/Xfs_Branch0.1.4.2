@@ -3,25 +3,23 @@ using System.Net;
 
 namespace Xfs
 {
-	public class XfsNetInnerComponent: XfsNetWorkComponent
+	public class XfsNetInnerComponent: XfsNetSocketComponent
 	{
         public override XfsSenceType SenceType => XfsGame.XfsSence.Type;
-		public override bool IsListen => XfsGame.XfsSence.IsServer;
-
 
 		public readonly Dictionary<IPEndPoint, XfsSession> adressSessions = new Dictionary<IPEndPoint, XfsSession>();
 
-        public override void Remove(long id)
-		{
-			XfsSession session = this.Get(id);
-			if (session == null)
-			{
-				return;
-			}
-			this.adressSessions.Remove(session.RemoteAddress);
+  //      public override void Remove(long id)
+		//{
+		//	XfsSession session = this.Get(id);
+		//	if (session == null)
+		//	{
+		//		return;
+		//	}
+		//	this.adressSessions.Remove(session.RemoteAddress);
 
-			base.Remove(id);
-		}
+		//	base.Remove(id);
+		//}
 
 		/// <summary>
 		/// 从地址缓存中取Session,如果没有则创建一个新的Session,并且保存到地址缓存中

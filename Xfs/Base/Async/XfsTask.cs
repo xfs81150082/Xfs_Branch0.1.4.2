@@ -16,8 +16,11 @@ namespace Xfs
         {
             this.awaiter = awaiter;
         }
-        public XfsAwaiterStatus Status => awaiter?.Status ?? XfsAwaiterStatus.Succeeded;  
+
+        public XfsAwaiterStatus Status => awaiter?.Status ?? XfsAwaiterStatus.Succeeded;
+        
         public bool IsCompleted => awaiter?.IsCompleted ?? true;
+
         public void GetResult()
         {
             if (awaiter != null)
@@ -25,13 +28,16 @@ namespace Xfs
                 awaiter.GetResult();
             }
         }
+
         public void Coroutine()
         {
         }
+
         public XfsAwaiter GetAwaiter()
         {
             return new XfsAwaiter(this);
         }
+
         public bool Equals(XfsTask other)
         {
             if (this.awaiter == null && other.awaiter == null)
@@ -44,6 +50,7 @@ namespace Xfs
             }
             return false;
         }
+
         public override int GetHashCode()
         {
             if (this.awaiter == null)
@@ -52,12 +59,14 @@ namespace Xfs
             }
             return this.awaiter.GetHashCode();
         }
+
         public override string ToString()
         {
             return this.awaiter == null ? "()"
                     : this.awaiter.Status == XfsAwaiterStatus.Succeeded ? "()"
                     : "(" + this.awaiter.Status + ")";
         }
+
         public struct XfsAwaiter : IXfsAwaiter
         {
             private readonly XfsTask task;
@@ -94,6 +103,7 @@ namespace Xfs
                 }
             }
         }
+
     }
 
     public struct XfsTask<T> : IEquatable<XfsTask<T>>

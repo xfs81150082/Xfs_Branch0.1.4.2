@@ -2,6 +2,8 @@
 {
     public sealed class XfsSence : XfsEntity
     {
+        public XfsSenceType Type { get; set; }
+        
         private bool isServer;
         public bool IsServer
         {
@@ -18,14 +20,19 @@
                 return this.isServer;
             }
         }
-        public XfsSenceType Type { get; set; }
+        
+        
         public XfsSence() { }
+        
         public string Name { get; set; }
+        
         public XfsSence(long id) : base(id) {  }
+        
         public XfsSence(XfsSenceType type)
         {
             this.Type = type;           
         }
+
     }
 
     public enum XfsSenceType
@@ -33,10 +40,9 @@
         XfsClient,
         XfsServer,
 
+
         //XfsAllServer,
         //XfsNone,
-        
-        
     }
 
 }

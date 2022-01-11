@@ -31,6 +31,7 @@ namespace Xfs
 				return this.GetComponent<XfsAsyncUserToken>();
             }			
 		}
+	
 		public XfsNetSocketComponent? NetSocket
 		{
 			get
@@ -38,18 +39,22 @@ namespace Xfs
 				return this.GetParent<XfsNetSocketComponent>();
 			}
 		}
-	
-		public XfsPacketParser? recvPacketParser { get; private set; }
-		public XfsPacketParser? sendPacketParser { get; private set; }
-		public XfsNetWorkComponent? Network
+		
+		public Socket? Socket
 		{
 			get
 			{
-				return this.GetParent<XfsNetWorkComponent>();
+				if (this.UserToken != null && this.UserToken.Socket!= null)
+				{
+					return this.UserToken.Socket;
+                }
+                else
+                {
+					return null;
+                }
 			}
-		}
-
-		public Socket? Socket { get; set; }                ///创建一个套接字，用于储藏代理服务端套接字，与客户端通信///客户端Socket 
+		}                                 ///创建一个套接字，用于储藏代理服务端套接字，与客户端通信///客户端Socket 
+		
 		public IPEndPoint? RemoteAddress
 		{
 			get
@@ -64,67 +69,27 @@ namespace Xfs
 				}
 			}
 		}
+		
 		public bool IsRunning { get; set; }
+
 		public bool IsServer { get; set; }
-		public bool IsListen { get; set; }
+
+		public bool IsClosed = false;
+
 		public XfsSenceType SenceType { get; set; }
+		
 		private static int RpcId { get; set; }
+		
 		public readonly Dictionary<int, Action<IXfsResponse>> requestCallback = new Dictionary<int, Action<IXfsResponse>>();
+		
 		public void Awake()
 		{
-			this.requestCallback.Clear();
-			this.AddComponent<XfsHeartComponent>();
-			this.sendPacketParser = XfsComponentFactory.CreateWithParent<XfsPacketParser>(this);
-			this.recvPacketParser = XfsComponentFactory.CreateWithParent<XfsPacketParser>(this);
-			if (this.recvPacketParser != null)
-			{
-				this.recvPacketParser.ReadCallback += this.OnRead;
-			}
+			this.requestCallback.Clear();			
 		}
-		#endregion
+        #endregion
 
-		#region 接收Socket信息        
-		public void BeginReceiveMessage(XfsAsyncUserToken userToken)
-		{
-            if (this.GetComponent<XfsAsyncUserToken>() != null)
-            {
-				this.GetComponent<XfsAsyncUserToken>().Socket = userToken.Socket;
-				this.GetComponent<XfsAsyncUserToken>().SendEventArgs.RemoteEndPoint = userToken.Socket.LocalEndPoint;
-				this.GetComponent<XfsAsyncUserToken>().ReadCallback += this.OnRead;
-			}
-			this.AddComponent(userToken);
-			this.Socket = userToken.Socket;
-			
-			this.OnConnect();
-		}
-
-		public void BeginReceiveMessage(Socket socket)
-		{
-			this.Socket = socket;
-			if (this.recvPacketParser == null)
-			{
-				this.recvPacketParser = XfsComponentFactory.CreateWithParent<XfsPacketParser>(this);
-			}
-			if (this.recvPacketParser != null && this.Socket != null)
-			{
-				this.recvPacketParser.BeginReceiveMessage(socket);
-			}
-			this.OnConnect();
-		}
-
-		public void OnConnect()
-		{			
-			///显示与客户端连接			
-			if (this.Socket != null)
-			{
-				Console.WriteLine(XfsTimeHelper.CurrentTime() + " 一个会话发生， IsListener: " + this.IsListen + " L: " + this.Socket.LocalEndPoint);
-				Console.WriteLine(XfsTimeHelper.CurrentTime() + " 一个会话发生， IsListener: " + this.IsListen + " R: " + this.Socket.RemoteEndPoint);
-			}
-		}
-		#endregion
-
-		#region 接收包裹信息
-		public void OnRead(object obj, object message)
+        #region OnRead XfsRun///接收包裹信息
+        public void OnRead(object obj, object message)
 		{
 			try
 			{
@@ -135,6 +100,7 @@ namespace Xfs
 				Console.WriteLine(XfsTimeHelper.CurrentTime() + e);
 			}
 		}
+
 		public void XfsRun(object obj, object message)
 		{
 			IXfsResponse? response = message as IXfsResponse;
@@ -176,8 +142,7 @@ namespace Xfs
 		}
 		#endregion
 
-		#region Call Send 内外网发送消息
-		/// 外网发送消息		
+		#region Call Send /// 外网发送消息				
 		public XfsTask<IXfsResponse> Call(IXfsRequest request, CancellationToken cancellationToken)
 		{
 			int rpcId = ++RpcId;
@@ -206,6 +171,7 @@ namespace Xfs
 			this.Send(request);
 			return tcs.Task;
 		}
+
 		public XfsTask<IXfsResponse> Call(IXfsRequest request)
 		{
 			int rpcId = ++RpcId;
@@ -232,62 +198,32 @@ namespace Xfs
 			this.Send(request);
 			return tcs.Task;
 		}
-		public void Reply(IXfsResponse message)
-		{
-			if (this.IsDisposed)
-			{
-				throw new Exception("session已经被Dispose了");
-			}
 
+		public void Reply(IXfsResponse message)
+		{	
 			this.Send(message);
 		}
+
 		public void Send(IXfsMessage message)
 		{
-			if (this.IsDisposed)
+			if (this.IsClosed)
 			{
-				Console.WriteLine(XfsTimeHelper.CurrentTime() + " : " + this.GetType().Name + "-222" + ": session InstanceId: " + this.InstanceId + " 已经被Dispose了");
-				//if (this.Network != null)
-				//{
-				//	if (this.Network.Sessions.Count > 0)
-				//	{
-				//		if (this.Network.Sessions.TryGetValue(this.InstanceId, out XfsSession? peer))
-				//		{
-				//			this.Network.Sessions.Remove(this.InstanceId);
-				//		}
-				//	}
-				//}
-				if (this.NetSocket != null)
-				{
-					if (this.NetSocket.Sessions.Count > 0)
-					{
-						if (this.NetSocket.Sessions.TryGetValue(this.InstanceId, out XfsSession? peer))
-						{
-							this.NetSocket.Sessions.Remove(this.InstanceId);
-						}
-					}
-				}
+				Console.WriteLine(XfsTimeHelper.CurrentTime() + " 216. " + this.GetType().Name +  " InstanceId: " + this.InstanceId + " 已经被Closed了");
+
+				this.Close();
+				
 				return;
 			}
-
-			//if (this.sendPacketParser == null)
-			//{
-			//	this.sendPacketParser = XfsComponentFactory.CreateWithParent<XfsPacketParser>(this);
-			//}
-
-			///发送信息message
-			//if (this.Socket != null && this.sendPacketParser != null)
-			//{
-			//	this.sendPacketParser.Send(message, this.Socket);
-			//}
 
 			if (this.UserToken != null && this.UserToken.Socket != null)
 			{
 				this.UserToken.Send(message);
 			}
 		}
+		#endregion
 
-		/// 内网发送消息		
-		public XfsTask<IXfsResponse> InCall(IXfsRequest request, CancellationToken cancellationToken)
+		#region Call Send Inner /// 内网发送消息	
+		public XfsTask<IXfsResponse> CallInner(IXfsRequest request, CancellationToken cancellationToken)
 		{
 			int rpcId = ++RpcId;
 			var tcs = new XfsTaskCompletionSource<IXfsResponse>();
@@ -312,10 +248,11 @@ namespace Xfs
 			cancellationToken.Register(() => this.requestCallback.Remove(rpcId));
 
 			request.RpcId = rpcId;
-			this.InSend(request);
+			this.SendInner(request);
 			return tcs.Task;
 		}
-		public XfsTask<IXfsResponse> InCall(IXfsRequest request)
+
+		public XfsTask<IXfsResponse> CallInner(IXfsRequest request)
 		{
 			int rpcId = ++RpcId;
 			var tcs = new XfsTaskCompletionSource<IXfsResponse>();
@@ -338,34 +275,69 @@ namespace Xfs
 			};
 
 			request.RpcId = rpcId;
-			this.InSend(request);
+			this.SendInner(request);
 			return tcs.Task;
 		}
-		public void InReply(IXfsResponse message)
+
+		public void ReplyInner(IXfsResponse message)
 		{
 			if (this.IsDisposed)
 			{
 				throw new Exception("session已经被Dispose了");
 			}
 
-			this.InSend(message);
+			this.SendInner(message);
 		}
-		public void InSend(IXfsMessage message)
+		
+		public void SendInner(IXfsMessage message)
 		{			
 			this.XfsRun(this, message);		
 		}
 		#endregion
 
-		#region Dispose
-		public override void Dispose()
+		#region ReceiveAsync Init Close
+		public void ReceiveAsync(Socket socket)
 		{
-			if (this.IsDisposed)
+			this.SenceType = XfsGame.XfsSence.Type;
+			this.IsServer = XfsGame.XfsSence.IsServer;
+			this.IsClosed = false;
+			this.IsRunning = true;
+
+			///添加心跳包
+			if (this.GetComponent<XfsHeartComponent>() == null)
+			{
+				this.AddComponent<XfsHeartComponent>();
+			}
+			this.GetComponent<XfsHeartComponent>().Init();
+
+			if (this.GetComponent<XfsAsyncUserToken>() == null)
+			{
+				this.AddComponent<XfsAsyncUserToken>();
+			}
+			this.GetComponent<XfsAsyncUserToken>().Init(socket);
+
+			///Client，如果服户端有消息包投递过来，则开始接收消息包
+			if (!socket.ReceiveAsync(this.GetComponent<XfsAsyncUserToken>().ReceiveEventArgs))//投递接收请求
+			{
+				this.GetComponent<XfsAsyncUserToken>().ProcessReceive(this.GetComponent<XfsAsyncUserToken>().ReceiveEventArgs);
+			}
+		}
+	
+		public void Close()
+		{
+			if (this.IsClosed)
 			{
 				return;
-			}
+			}			
 
-			base.Dispose();
-			this.Socket?.Close();
+			if (this.GetComponent<XfsHeartComponent>() != null)
+			{
+				this.GetComponent<XfsHeartComponent>().Close();
+			}
+			if (this.GetComponent<XfsAsyncUserToken>() != null)
+			{
+				this.GetComponent<XfsAsyncUserToken>().Close();
+			}
 
 			foreach (Action<IXfsResponse> action in this.requestCallback.Values.ToArray())
 			{
@@ -373,27 +345,36 @@ namespace Xfs
 			}
 			this.requestCallback.Clear();
 
-			if (this.recvPacketParser != null)
+			if (this.NetSocket != null)
 			{
-				this.recvPacketParser.ReadCallback -= this.OnRead;
-				this.recvPacketParser.Dispose();
-			}
-			if (this.sendPacketParser != null)
-			{
-				this.sendPacketParser.Dispose();
+				///从会话列表中移除
+				this.NetSocket.Remove(this.InstanceId);
+
+				///回收到Session池里
+				this.NetSocket._sessionPool.Push(this);
+
+				///如果是客户端，修改客户端的状态为没运行，没连结，然后客户端会自动自动重连
+				if (!this.NetSocket.IsServer)
+				{
+					this.NetSocket.IsRunning = false;
+				}
+
 			}
 
-			if (this.Network != null)
+			this.IsClosed = true;
+			this.IsRunning = false;			
+		}
+
+		public override void Dispose()
+		{
+			if (this.IsDisposed)
 			{
-				this.Network.Remove(this.InstanceId);
+				return;
 			}
 
-			this.IsRunning = false;
+			base.Dispose();			
 
-			if (this.Network != null)
-			{
-				Console.WriteLine(XfsTimeHelper.CurrentTime() + " 一个Session : 已经中断连接, Sessions: " + this.Network?.Sessions.Count);
-			}
+			this.Close();		
 		}
 		#endregion
 

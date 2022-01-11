@@ -15,24 +15,20 @@ namespace XfsServer
         {
             ///从客户端发来的信息
 
-            Console.WriteLine(XfsTimeHelper.CurrentTime() + " : " + this.GetType().Name + "-16" + " : 收到客户端发来的信息。RpcId:" + "(" + message.RpcId + ":" + message.Message + ")");
-
-
-            //Console.WriteLine(XfsTimeHelper.CurrentTime() + " : " + this.GetType().Name + "-16" + " : 收到客户端发来的信息。RpcId:" + "(" + message.RpcId + ":" + message.Message + ")"+" Peer: "+session.RemoteAddress.ToString());
-            
-            Console.WriteLine(XfsTimeHelper.CurrentTime() + " : " + this.GetType().Name + "-19" + " : 等待5秒后回复信息...");
+            Console.WriteLine(XfsTimeHelper.CurrentTime() + " " + this.GetType().Name + "-16" + " : 收到客户端发来的信息。RpcId:" + "(" + message.RpcId + ":" + message.Message + ")");
+           
+            Console.WriteLine(XfsTimeHelper.CurrentTime() + " " + this.GetType().Name + "-19" + " : 等待5秒后回复信息...");
             XfsGame.XfsSence.GetComponent<XfsTimerComponent>().WaitAsync(5000);
-            Console.WriteLine(XfsTimeHelper.CurrentTime() + " : " + this.GetType().Name + "-21" + " : 5秒时间到，发送回复信息。RpcId:" + message.RpcId);
+            Console.WriteLine(XfsTimeHelper.CurrentTime() + " " + this.GetType().Name + "-21" + " : 5秒时间到，发送回复信息。RpcId:" + message.RpcId);
 
            S4C_Ping response = new S4C_Ping();
             response.RpcId = message.RpcId;
-            //response.Message = "我是服务器..." + " Address: " + session.RemoteAddress.ToString();
             response.Message = "我是服务器..." + " Address:111111111 " ;
 
             ///调用行为代理委托（回调函数）,并传入参数response。
             reply(response);
 
-            Console.WriteLine(XfsTimeHelper.CurrentTime() + " G4C_PingHandler-31, 已发送回消息." );
+            Console.WriteLine(XfsTimeHelper.CurrentTime() + " S4C_PingHandler 34, 已发送回消息.");
         }
 
         ///async XfsVoid SpawnUnit(XfsSession session)

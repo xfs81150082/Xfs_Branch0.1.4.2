@@ -11,16 +11,9 @@ namespace Xfs
 		XfsClient,
 		XfsServer,
 		XfsUnityClient,
-
-
-        XfsConsoleClient,
-        XfsConsoleServer,
-        XfsWinFormsClient,
-        XfsWinFormsServer,
-
+		
 
         Editor,
-
 	}
 
 	public sealed class XfsEventSystem

@@ -11,9 +11,9 @@ namespace XfsServer
     {
         public TestEntity1()
         {
-            this.AddComponent<Class1>();
-            this.AddComponent<Class2>();
-            this.AddComponent<Class3>();
+            this.AddComponent<Test11Class1>();
+            this.AddComponent<Test12Class2>();
+            this.AddComponent<Test13Class3>();
         }
 
 

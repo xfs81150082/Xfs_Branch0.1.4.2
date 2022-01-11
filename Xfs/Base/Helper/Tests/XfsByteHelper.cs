@@ -95,5 +95,6 @@ namespace Xfs
 			bytes[offset] = (byte)(num & 0xff);
 			bytes[offset + 1] = (byte)((num & 0xff00) >> 8);
 		}
+
 	}
 }

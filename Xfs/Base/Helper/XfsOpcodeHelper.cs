@@ -24,5 +24,6 @@ namespace Xfs
 		{
 			return opcode > 10000;
 		}
+
 	}
 }

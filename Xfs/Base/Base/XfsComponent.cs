@@ -24,7 +24,7 @@ namespace Xfs
 
                 if (this.InstanceId == 0)
                 {
-                    this.InstanceId = XfsIdGeneraterHelper.GenerateInstanceId();
+                    this.InstanceId = XfsIdGeneraterHelper.GetId();
                 }
             }
         }  
@@ -63,7 +63,7 @@ namespace Xfs
 
         public XfsComponent()
         {
-            this.InstanceId = XfsIdGeneraterHelper.GenerateInstanceId();       
+            this.InstanceId = XfsIdGeneraterHelper.GenerateId();       
         }
 
         public override string ToString()

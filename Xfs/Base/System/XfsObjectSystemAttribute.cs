@@ -7,5 +7,7 @@ namespace Xfs
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     public class XfsObjectSystemAttribute : XfsBaseAttribute
     {
+
     }
+
 }

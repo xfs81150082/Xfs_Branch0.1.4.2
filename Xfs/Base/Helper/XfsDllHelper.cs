@@ -15,6 +15,7 @@ namespace Xfs
 			Assembly assembly = Assembly.Load(name);
 			return assembly;
 		}
+
 		public static Assembly GetXfsAssembly()
 		{
 			byte[] dllBytes = File.ReadAllBytes("./Xfs.dll");
@@ -22,6 +23,7 @@ namespace Xfs
 			Assembly assembly = Assembly.Load(dllBytes, pdbBytes);
 			return assembly;
 		}
+
 		public static Assembly GetXfsGateSeverAssembly()
 		{
 			byte[] dllBytes = File.ReadAllBytes("./XfsGateSever.dll");
@@ -29,6 +31,7 @@ namespace Xfs
 			Assembly assembly = Assembly.Load(dllBytes, pdbBytes);
 			return assembly;
 		}
+
 		public static Assembly GetXfsConsoleClientAssembly()
 		{
 			byte[] dllBytes = File.ReadAllBytes("./XfsConsoleClient.dll");
@@ -36,8 +39,6 @@ namespace Xfs
 			Assembly assembly = Assembly.Load(dllBytes, pdbBytes);
 			return assembly;
 		}
-
-
 
 	}
 }

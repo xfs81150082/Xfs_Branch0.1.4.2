@@ -1,7 +1,7 @@
 ﻿namespace Xfs
 {
 	public static class XfsGame
-	{		
+	{
 		private static XfsSence? xfsSence;
 		public static XfsSence XfsSence
 		{

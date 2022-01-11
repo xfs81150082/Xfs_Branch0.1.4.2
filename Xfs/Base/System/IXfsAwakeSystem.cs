@@ -8,6 +8,7 @@ namespace Xfs
     {
         Type Type();
     }
+
 	public interface IXfsAwake
 	{
 		void Run(object o);
@@ -87,6 +88,5 @@ namespace Xfs
 
 		public abstract void Awake(T self, A a, B b, C c);
 	}
-
 
 }

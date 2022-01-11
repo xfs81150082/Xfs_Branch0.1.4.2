@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,52 +11,73 @@ namespace Xfs
     class XfsHeartComponentAwakeSystem : XfsStartSystem<XfsHeartComponent>
     {
         public override void Start(XfsHeartComponent self)
-        { 
-            self.CdCount = 0; ;
-            self.MaxCdCount = 4; ;
-            self.Counting = true; ;
+        {
+            //self.CdCount = 0;
+            //self.MaxCdCount = 4;
+            //self.Heartting = false;
+            //self.IsPool = true;
         }
     }
+
     [XfsObjectSystem]
     class XfsHeartComponentUpdateSystem : XfsUpdateSystem<XfsHeartComponent>
     {
         public override void Update(XfsHeartComponent self)
         {
-            //CheckSession(self);
+            Heartting(self);
+
+            Check(self);
+
         }
-        
-        int ti = 0;
-        int timer = 4000;
 
-        void CheckSession(XfsHeartComponent self)
+        int heartTime = 0;
+        int restime = 4000;
+        void Heartting(XfsHeartComponent self)
         {
-            //XfsGame.XfsSence.GetComponent<XfsTimerComponent>().WaitAsync(4000);
-            
-            ti += 1;
-            if (ti < timer) return;
-            ti = 0;
-            self.CdCount += 1;
-            if (self.CdCount > self.MaxCdCount)
-            {              
-                if (!(self.Parent as XfsSession).IsListen)
-                {
-                    if ((self.Parent as XfsSession).Network != null)
-                    {
-                        (self.Parent as XfsSession).Network.IsRunning = false;
-                    }
-                }
-                self.Parent.Dispose();
-            }
-            else
+            heartTime += 1;
+            if (heartTime > restime)
             {
-                //发送心跳检测（并等待签到，签到入口在TmTcpSession里，双向发向即：客户端向服务端发送，服务端向客户端发送）
-                if ((self.Parent as XfsSession) != null)
-                {
-                    (self.Parent as XfsSession).Send(new C4S_Heart());
-                    //Console.WriteLine(XfsTimeHelper.CurrentTime() + " SenceType: " + (self.Parent as XfsSession).SenceType + " CdCount:{0}-{1} ", self.CdCount, self.MaxCdCount);
-                    Console.WriteLine(XfsTimeHelper.CurrentTime() + " " + this.GetType().Name + " 56: 141.");
-                }
+                heartTime = 0;
+                if (self.IsPool) return;
 
+                XfsSession? session = self.Parent as XfsSession;
+                if (session == null || !session.IsRunning) return;
+
+                //Thread.Sleep(4000);
+                //XfsGame.XfsSence.GetComponent<XfsTimerComponent>().WaitAsync(4000000);
+
+                C4S_Heart resqustC = new C4S_Heart();
+                resqustC.Opcode = XfsGame.XfsSence.GetComponent<XfsOpcodeTypeComponent>().GetOpcode(resqustC.GetType());
+                resqustC.Message = XfsTimeHelper.Now().ToString();
+
+                session.Send(resqustC);
+
+                Console.WriteLine(XfsTimeHelper.CurrentTime() + " 57. " + this.GetType().Name + " 心跳包已发出: " + session.InstanceId);
+
+            }
+        }
+
+        int checkTime = 0;
+        void Check(XfsHeartComponent self)
+        {
+            checkTime += 1;
+            if (checkTime > restime)
+            {
+                checkTime = 0;
+                if (self.IsPool) return;
+                if (!self.Heartting) return;
+
+                XfsSession? session = self.Parent as XfsSession;
+                if (session == null) return;
+
+                //Thread.Sleep(4000);
+                //XfsGame.XfsSence.GetComponent<XfsTimerComponent>().WaitAsync(4000000);
+
+                session.GetComponent<XfsHeartComponent>().CdCount += 1;
+                if (session.GetComponent<XfsHeartComponent>().CdCount > session.GetComponent<XfsHeartComponent>().MaxCdCount)
+                {
+                    session.Close();
+                }
             }
         }
 

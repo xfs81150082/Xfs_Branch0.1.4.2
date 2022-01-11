@@ -14,6 +14,7 @@ namespace Xfs
             XfsMessageInfo messageInfo = JsonConvert.DeserializeObject<XfsMessageInfo>(value);
             return messageInfo;
         }    
+
         public static T OutOfDictionary<T>(string key, Dictionary<string, T> dictionary)
         {
             T val;

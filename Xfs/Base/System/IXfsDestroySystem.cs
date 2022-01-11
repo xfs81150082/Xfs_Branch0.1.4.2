@@ -11,6 +11,7 @@ namespace Xfs
         Type Type();
         void Run(object o);
     }
+
 	public abstract class XfsDestroySystem<T> : IXfsDestroySystem
 	{
 		public void Run(object o)

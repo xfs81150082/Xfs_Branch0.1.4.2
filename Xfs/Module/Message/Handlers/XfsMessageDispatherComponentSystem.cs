@@ -32,7 +32,7 @@ namespace Xfs
 			self.Handlers.Clear();
 
 			XfsSenceType appType = XfsGame.XfsSence.Type;
-			List<Type> types = XfsGame.EventSystem.GetTypes(typeof(XfsMessageHandlerAttribute));
+			List<Type> types = XfsGame.EventSystem.GetTypes(typeof(XfsMessageHandlerAttribute));			
 
 			foreach (Type type in types)
 			{
@@ -43,12 +43,19 @@ namespace Xfs
 				}
 
 				XfsMessageHandlerAttribute messageHandlerAttribute = attrs[0] as XfsMessageHandlerAttribute;
-				if (!messageHandlerAttribute.Type.Is(appType))
+
+				//if (!messageHandlerAttribute.Type.Is(appType))
+				//{
+				//	continue;
+				//}
+
+				if (messageHandlerAttribute.Type != appType)
 				{
 					continue;
 				}
 
 				IXfsMHandler iMHandler = Activator.CreateInstance(type) as IXfsMHandler;
+
 				if (iMHandler == null)
 				{
 					Console.WriteLine($"message handle {type.Name} 需要继承 IMHandler");
@@ -62,7 +69,7 @@ namespace Xfs
 					Console.WriteLine($"消息opcode为0: {messageType.Name}");
 					continue;
 				}
-				self.RegisterHandler(opcode, iMHandler);
+				self.RegisterHandler(opcode, iMHandler);				
 			}
 		}
 

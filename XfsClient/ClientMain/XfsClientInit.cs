@@ -9,10 +9,9 @@ using Xfs;
 
 namespace XfsClient
 {
-    public class XfsClientInit
-    {
-        public XfsClientInit()  {    }
-  
+    public class XfsClientInit : XfsComponent
+    {  
+        //程序启动入口
         public void Start()
         {
             Console.WriteLine(XfsTimeHelper.CurrentTime() + " ... ");
@@ -34,22 +33,17 @@ namespace XfsClient
 
                 ///服务器加载组件
                 XfsGame.XfsSence.Type = XfsSenceType.XfsClient;
+                XfsGame.XfsSence.AddComponent<XfsTimerComponent>();
+                
                 XfsGame.XfsSence.AddComponent<XfsStartConfigComponent>();                           ///加载组件 : 信息组件
                 XfsGame.XfsSence.AddComponent<XfsOpcodeTypeComponent>();                            ///加载组件 : 操作号码
+                XfsGame.XfsSence.AddComponent<XfsMessageDispatcherComponent>();                     ///加载组件 : 信息分检组件
+                XfsGame.XfsSence.AddComponent<XfsNetOuterComponent>();                              ///加载组件 : 通信组件
 
 
-                XfsGame.XfsSence.AddComponent<XfsNetOuterComponent>();                       ///加载组件 : 通信组件
+                //XfsGame.XfsSence.AddComponent<NetInnerComponent, string>(innerConfig.Address);  //// 内网消息组件
+                //XfsGame.XfsSence.AddComponent<XfsMessageHandlerComponent>();                      ///加载组件 : 信息处理组件
 
-
-
-                //XfsGame.XfsSence.AddComponent<XfsAsyncIocpServer>().Start();                                ///加载组件 : 通信组件
-
-
-                //XfsGame.XfsSence.AddComponent<XfsNetSocketComponent>().ClientInit();              ///加载组件 : 通信组件
-
-                //XfsGame.XfsSence.AddComponent<XfsNetOuterComponent>();                            ///加载组件 : 通信组件
-
-                //XfsGame.XfsSence.AddComponent<XfsTcpClientNet>();                                 ///加载组件 : 通信组件
 
                 XfsGame.XfsSence.AddComponent<XfsTest>();                                           ///加载组件 : 测试组件
 

@@ -7,8 +7,8 @@ using Xfs;
 
 namespace XfsServer
 {
-    public class Class3 : XfsComponent
+    public class Test12Class2 : XfsComponent
     {
-        public string test3 = "test3-20201109";
+        public string test2 = "test2-20201109";
     }
 }

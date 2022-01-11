@@ -11,45 +11,69 @@ using System.Collections.Concurrent;
 namespace Xfs
 {
     ///套节字Socket异步通信，用SocketAsyncEventArgs类异步通信，Iocp架构。
-    public abstract class XfsNetSocketComponent : XfsComponent
+    public abstract class XfsNetSocketComponent : XfsEntity
     {
-        #region ///Properties 
+        #region Properties/// 
         private Socket _netSocket;                                                    /// 监听Socket，用于接受客户端的连接请求      
-        public bool IsRunning { get; private set; }                                   /// 服务器是否正在运行      
-        public abstract XfsSenceType SenceType { get;  }                           /// 服务器类型？
-        public abstract bool IsServer { get;  }                                    /// 服务端？客户端？
-        private IPEndPoint _ipEendPoint { get; set; }                                 /// 监听的IP地址
-        private int _port { get; set; } = 4002;                                       /// 监听的端口
-        private string _address { get; set; } = "127.0.0.1";        
-        private int _maxClient = 10;                                                  /// 服务器程序允许的最大客户端连接数
+        public bool IsRunning { get; set; }                                           /// 服务器是否正在运行      
+        public abstract XfsSenceType SenceType { get;  }                              /// 服务器类型？
+        public bool IsServer 
+        { 
+            get 
+            { 
+                if (SenceType == XfsSenceType.XfsClient) 
+                    return false;
+
+                return true; 
+            } 
+        }                                       /// 服务端？客户端？
+        private IPEndPoint _ipEendPoint { get; set; }                                            /// 监听的IP地址
+        private int _port { get; set; } = 4002;                                                 /// 监听的端口
+        private string _address { get; set; } = "127.0.0.1";
+        private int _maxClientSessiong = 4;                                                            /// 服务器程序允许的最大客户端连接数
+        private int _maxSeverSessiong = 10;                                                            /// 服务器程序允许的最大客户端连接数
         public IXfsMessageDispatcher? MessageDispatcher { get; set; }
 
-        public XfsAsyncUserTokenPool _userTokenPool;                                  /// 对象池
+        public XfsSessionPool _sessionPool;                                                      /// 会话对象池
 
-        public Dictionary<long, XfsSession> Sessions = new Dictionary<long, XfsSession>();
+        public Dictionary<long, XfsSession> Sessions = new Dictionary<long, XfsSession>();       /// 活跃的会话群
         public Queue<Socket> WaitingSockets = new Queue<Socket>();
-      
+
+        private bool isArgsInit = false;
         private bool disposed = false;
 
         public XfsNetSocketComponent() { }
         /// 初始化函数
         public void ArgsInit(string address,int port,int maxClient)
         {
+            if (this.isArgsInit) return;
             this._address = address;
             this._port = port;
-            this._maxClient = maxClient;
+            this._maxSeverSessiong = maxClient;
 
             this.ArgsInit();
         }
-        private void ArgsInit()
+        public void ArgsInit()
         {
-            this._ipEendPoint = new IPEndPoint(IPAddress.Parse(this._address), this._port) as IPEndPoint;
-            this._userTokenPool = new XfsAsyncUserTokenPool(this._maxClient);
-            this._netSocket = new Socket(_ipEendPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-            this.MessageDispatcher = new XfsOuterMessageDispatcher();
+            if (this.isArgsInit) return;
 
-            Console.WriteLine(XfsTimeHelper.CurrentTime() + " 46. userTokenPool.Count " + this._userTokenPool.Count);
-            Console.WriteLine(XfsTimeHelper.CurrentTime() + " 47. IpEendPoint:" + this._ipEendPoint.Address + ":" + this._ipEendPoint.Port + ".");
+            this._ipEendPoint = new IPEndPoint(IPAddress.Parse(this._address), this._port) as IPEndPoint;
+
+            if (!this.IsServer)
+            {
+                this._sessionPool = new XfsSessionPool(this._maxClientSessiong);
+            }
+            else
+            {
+                this._sessionPool = new XfsSessionPool(this._maxSeverSessiong);
+            }
+
+            if (this.MessageDispatcher == null)
+            {
+                this.MessageDispatcher = new XfsOuterMessageDispatcher();
+            }
+
+            this.isArgsInit = true;           
         }
         #endregion
 
@@ -57,18 +81,16 @@ namespace Xfs
         /// Server启动 监听
         public void ServerListenStart()
         {
-            //this.ArgsInit();
-
             if (!this.IsRunning)
             {
                 this._netSocket = new Socket(_ipEendPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);// 创建监听socket
                 this._netSocket.Bind(_ipEendPoint);
-                this._netSocket.Listen(this._maxClient); // 开始监听
+                this._netSocket.Listen(this._maxSeverSessiong); // 开始监听
                 this.IsRunning = true;
 
-                Console.WriteLine(XfsTimeHelper.CurrentTime() + " 63. 开始监听: " + " XfsNetSocketComponent.");
-                Console.WriteLine(XfsTimeHelper.CurrentTime() + " 64. L: " + this._netSocket.LocalEndPoint);
-                Console.WriteLine(XfsTimeHelper.CurrentTime() + " 65. R: " + this._netSocket.RemoteEndPoint);
+                Console.WriteLine(XfsTimeHelper.CurrentTime() + " 93. 开始监听: " + " XfsNetSocketComponent.");
+                Console.WriteLine(XfsTimeHelper.CurrentTime() + " 94. L: " + this._netSocket.LocalEndPoint);
+                Console.WriteLine(XfsTimeHelper.CurrentTime() + " 95. R: " + this._netSocket.RemoteEndPoint);
 
                 // 在监听Socket上投递一个接受请求。
                 this.StartAccept(null);
@@ -81,10 +103,10 @@ namespace Xfs
             {
                 e = new SocketAsyncEventArgs();
 
-                //asyniar.Completed += new EventHandler<SocketAsyncEventArgs>(OnAcceptCompleted);和下一行作用相同
-                Console.WriteLine(XfsTimeHelper.CurrentTime() + " 79. e.LastOperation: " + e.LastOperation.ToString());
-
+                //e.Completed += new EventHandler<SocketAsyncEventArgs>(OnAcceptCompleted);和下一行作用相同
                 e.Completed += (sender, e) => this.ProcessAccept(e); ///和上一行作用相同
+
+                Console.WriteLine(XfsTimeHelper.CurrentTime() + " 79. e.LastOperation: " + e.LastOperation.ToString());
             }
             else
             {
@@ -92,6 +114,7 @@ namespace Xfs
             }
 
             //_maxAcceptedClients.WaitOne();
+
             if (!this._netSocket.AcceptAsync(e))
             {
                 Console.WriteLine(XfsTimeHelper.CurrentTime() + " 91. e.LastOperation: " + e.LastOperation.ToString());
@@ -112,7 +135,7 @@ namespace Xfs
                     try
                     {
                         ///限制监听数量
-                        if (this.Sessions.Count >= this._maxClient)
+                        if (this.Sessions.Count >= this._maxSeverSessiong)
                         {
                             ///触发事件///在线排队等待
                             this.WaitingSockets.Enqueue(peerSocket);
@@ -120,47 +143,17 @@ namespace Xfs
                             Console.WriteLine(XfsTimeHelper.CurrentTime() + " " + this.GetType().Name + " 118. 客户端排队列表 "  + this.WaitingSockets.Count + " 位.");
 
                             return;
-                        }                       
-
-                        ///创建一个Session接收socket
-                        XfsSession? session = XfsComponentFactory.CreateWithParent<XfsSession>(this);
-                        if (session == null) return;
-
-                        session.SenceType = this.SenceType;
-                        session.IsServer = this.IsServer;
-                        session.IsRunning = true;
-
-                        ///添加心跳包
-                        if (session.GetComponent<XfsHeartComponent>() == null)
-                        {
-                            session.AddComponent<XfsHeartComponent>();
-                        }
-                        if (session.GetComponent<XfsAsyncUserToken>() == null)
-                        {
-                            session.AddComponent<XfsAsyncUserToken>();
                         }
 
-                        session.GetComponent<XfsAsyncUserToken>().Socket = peerSocket;
-                        session.GetComponent<XfsAsyncUserToken>().SendEventArgs.RemoteEndPoint = peerSocket.LocalEndPoint;
-
-
-                        ///加入会话字典
-                        this.Add(session);
-
-                        Console.WriteLine(XfsTimeHelper.CurrentTime() + " " + this.GetType().Name + " 159. 客户端 " + peerSocket.RemoteEndPoint.ToString() + " 连入, 共有 " + this.Sessions.Count + " 个会话.");
-
-                        ///Server，如果客户端有消息包投递过来，则开始接收消息包
-                        if (!peerSocket.ReceiveAsync(session.GetComponent<XfsAsyncUserToken>().ReceiveEventArgs))//投递接收请求
-                        {
-                            session.GetComponent<XfsAsyncUserToken>().ProcessReceive(e);
-                        }
-
+                        ///用一个会话Session接收socket
+                        this.UseSession(peerSocket);
                     }
                     catch (SocketException ex)
                     {
                         Console.WriteLine(XfsTimeHelper.CurrentTime() + String.Format(" 127. 接收客户 {0} 数据出错, 异常信息： {1} 。", this._ipEendPoint, ex.ToString()));
                         //TODO 异常处理
                     }
+
                     //投递下一个接受请求
                     this.StartAccept(e);
                 }
@@ -168,71 +161,69 @@ namespace Xfs
         }
         #endregion
 
-        #region ///Client开始连接
+        #region Client///开始连接
         /// 启动连结
         public void ClientConnentStart()
         {
-            //this.ArgsInit();
-
             if (!this.IsRunning)
             {
                 this._netSocket = new Socket(this._ipEendPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);// 创建监听socket
                 this._netSocket.ConnectAsync(this._ipEendPoint);
             
-                ///创建一个Session接收socket
-                XfsSession? session = XfsComponentFactory.CreateWithParent<XfsSession>(this);
-                if (session == null) return;
-
-                session.SenceType = this.SenceType;
-                session.IsServer = this.IsServer;
-                session.IsRunning = true;
-
-                ///添加心跳包
-                if (session.GetComponent<XfsHeartComponent>() == null)
-                {
-                    session.AddComponent<XfsHeartComponent>();
-                }
-                if (session.GetComponent<XfsAsyncUserToken>() == null)
-                {
-                    session.AddComponent<XfsAsyncUserToken>();
-                }
-
-                session.GetComponent<XfsAsyncUserToken>().Socket = this._netSocket;
-                session.GetComponent<XfsAsyncUserToken>().SendEventArgs.RemoteEndPoint = this._netSocket.LocalEndPoint;
-
-                ///加入会话字典
-                this.Add(session);
-
                 this.IsRunning = true;
 
-                Console.WriteLine(XfsTimeHelper.CurrentTime() + " 166. 开始连结: " + " XfsNetSocketComponent.");
-                Console.WriteLine(XfsTimeHelper.CurrentTime() + " 167. L: " + this._netSocket.LocalEndPoint);
-                Console.WriteLine(XfsTimeHelper.CurrentTime() + " 168. R: " + this._netSocket.RemoteEndPoint);
-
-                ///Client，如果服户端有消息包投递过来，则开始接收消息包
-                if (!this._netSocket.ReceiveAsync(session.GetComponent<XfsAsyncUserToken>().ReceiveEventArgs))//投递接收请求
-                {
-                    session.GetComponent<XfsAsyncUserToken>().ProcessReceive(session.GetComponent<XfsAsyncUserToken>().ReceiveEventArgs);
-                }
+                ///用一个会话Session接收socket
+                this.UseSession(this._netSocket);                
             }
         }
         #endregion
 
-        #region ///Add      
+        #region Add Remove///    
+        public virtual void UseSession(Socket socket)
+        {
+            XfsSession? session = _sessionPool.Pop(this);
+            if (session == null) return;
+
+            session.ReceiveAsync(socket); 
+
+            ///加入会话字典
+            this.Add(session);           
+        }
+
+        public virtual void ColseSession(XfsSession session)
+        {
+            if (session.IsClosed)
+            {
+                return;
+            }
+
+            session.Close();
+        }
+        
         public virtual void Add(XfsSession session)
         {
-            XfsSession? ses;
-            if (this.Sessions.TryGetValue(session.InstanceId, out ses))
+            if (this.Sessions.TryGetValue(session.InstanceId, out XfsSession? ses))
             {
                 this.Sessions.Remove(ses.InstanceId);
             }
             this.Sessions.Add(session.InstanceId, session);
+
+            Console.WriteLine(XfsTimeHelper.CurrentTime() + " 一个Session : 开始连接, Sessions: " + XfsGame.XfsSence.GetComponent<XfsNetOuterComponent>().Sessions.Count);
+            Console.WriteLine(XfsTimeHelper.CurrentTime() + " 一个Session : 会话池子数量: " + XfsGame.XfsSence.GetComponent<XfsNetOuterComponent>()._sessionPool.Count);
+
         }
 
+        public void Remove(long instanceId)
+        {
+            this.Sessions.Remove(instanceId);
 
+            Console.WriteLine(XfsTimeHelper.CurrentTime() + " 一个Session : 已经中断连接, Sessions: " + XfsGame.XfsSence.GetComponent<XfsNetOuterComponent>().Sessions.Count);
+            Console.WriteLine(XfsTimeHelper.CurrentTime() + " 一个Session : 会话池子数量: " + XfsGame.XfsSence.GetComponent<XfsNetOuterComponent>()._sessionPool.Count);
+        }
         #endregion
 
-        #region ///Dispose
+        #region Dispose///
+
         public override void Dispose()
         {
             if (!this.disposed)
@@ -254,8 +245,6 @@ namespace Xfs
             GC.SuppressFinalize(this);
         }
         #endregion
-
-
     }
 
     public class MessageData : XfsComponent

@@ -11,6 +11,7 @@ namespace Xfs
         Type Type();
         void Run(object o);
     }
+
 	public abstract class XfsLateUpdateSystem<T> : IXfsLateUpdateSystem
 	{
 		public void Run(object o)

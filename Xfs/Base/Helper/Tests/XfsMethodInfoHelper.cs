@@ -22,5 +22,6 @@ namespace Xfs
 				methodInfo.Invoke(obj, param);
 			}
 		}
+
 	}
 }

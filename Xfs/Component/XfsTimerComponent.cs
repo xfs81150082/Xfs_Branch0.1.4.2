@@ -6,8 +6,19 @@ namespace Xfs
 	public struct XfsTimer
 	{
 		public long Id { get; set; }
+
 		public long Time { get; set; }
+
 		public XfsTaskCompletionSource tcs;
+	}
+
+	[XfsObjectSystem]
+	public class XfsTimerComponentStartSystem : XfsStartSystem<XfsTimerComponent>
+	{
+		public override void Start(XfsTimerComponent self)
+		{
+			self.minTime = XfsTimeHelper.Now();
+		}
 	}
 
 	[XfsObjectSystem]
@@ -18,14 +29,11 @@ namespace Xfs
 			self.Update();
 		}
 	}
-
 	public class XfsTimerComponent : XfsComponent
 	{
 		private readonly Dictionary<long, XfsTimer> timers = new Dictionary<long, XfsTimer>();
 
-		/// <summary>
 		/// key: time, value: timer id
-		/// </summary>
 		private readonly XfsMultiMap<long, long> timeId = new XfsMultiMap<long, long>();
 
 		private readonly Queue<long> timeOutTime = new Queue<long>();
@@ -33,7 +41,7 @@ namespace Xfs
 		private readonly Queue<long> timeOutTimerIds = new Queue<long>();
 
 		// 记录最小时间，不用每次都去MultiMap取第一个值
-		private long minTime;
+		public long minTime;
 
 		public void Update()
 		{
