@@ -14,7 +14,7 @@ namespace Xfs
         {
             session.GetComponent<XfsHeartComponent>().CdCount = 0;
 
-            Console.WriteLine(XfsTimeHelper.CurrentTime() + " " + this.GetType() + " 17. session: " + session.Socket.LocalEndPoint);
+            Console.WriteLine(XfsTimeHelper.CurrentTime() + " " + this.GetType() + " 17. session: " + session.GetComponent<XfsAsyncUserToken>().Socket.LocalEndPoint);
             Console.WriteLine(XfsTimeHelper.CurrentTime() + " " + this.GetType() + " 18. CdCount: " + session.GetComponent<XfsHeartComponent>().CdCount);
         }
 

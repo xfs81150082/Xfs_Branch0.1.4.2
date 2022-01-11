@@ -38,16 +38,40 @@ namespace Xfs
         private SocketAsyncEventArgs _receiveEventArgs;       
         public SocketAsyncEventArgs ReceiveEventArgs
         {
-            get { return _receiveEventArgs; }
-            set { _receiveEventArgs = value; }
+            get
+            {
+                if (_receiveEventArgs == null)
+                {
+                    this._asyncReceiveBuffer = new byte[this._buffersize];
+                    this._receiveEventArgs = new SocketAsyncEventArgs();
+                    this._receiveEventArgs.UserToken = this;
+                    this._receiveEventArgs.SetBuffer(_asyncReceiveBuffer, 0, _asyncReceiveBuffer.Length);       ///设置接收缓冲区
+                    this._receiveEventArgs.Completed += new EventHandler<SocketAsyncEventArgs>(this.OnCompleted);
+                }
+                return _receiveEventArgs;
+            }
         }
         
         ///发送数据的SocketAsyncEventArgs
         private SocketAsyncEventArgs _sendEventArgs;
         public SocketAsyncEventArgs SendEventArgs
         {
-            get { return _sendEventArgs; }
-            set { _sendEventArgs = value; }
+            get
+            {
+                if (_sendEventArgs == null)
+                {
+                    this._asyncSendBuffer = new byte[this._buffersize];
+                    this._sendEventArgs = new SocketAsyncEventArgs();
+                    this._sendEventArgs.UserToken = this;
+                    this._sendEventArgs.SetBuffer(_asyncSendBuffer, 0, _asyncSendBuffer.Length);                ///设置发送缓冲区
+                    this._sendEventArgs.Completed += new EventHandler<SocketAsyncEventArgs>(this.OnCompleted);
+                }
+                return _sendEventArgs;
+            }
+
+
+            //get { return _sendEventArgs; }
+            //set { _sendEventArgs = value; }
         }
         
         ///接收数据的缓冲区
@@ -97,33 +121,32 @@ namespace Xfs
         #region TokenInit 初始化参数
         public XfsAsyncUserToken()
         {
-            TokenInit();
+            //TokenInit();
         }        
 
-        public XfsAsyncUserToken(int bufferSize)
-        {
-            this._buffersize = bufferSize;
-            this.TokenInit();
-        }
+        //public XfsAsyncUserToken(int bufferSize)
+        //{
+        //    this._buffersize = bufferSize;
+        //    //this.TokenInit();
+        //}
+        //private void TokenInit()
+        //{
+        //    this._socket = null;
 
-        private void TokenInit()
-        {
-            this._socket = null;
+        //    //this._receiveBuffer = new XfsDynamicBufferManager(this._buffersize);
+        //    this._asyncReceiveBuffer = new byte[this._buffersize];
+        //    this._receiveEventArgs = new SocketAsyncEventArgs();
+        //    this._receiveEventArgs.UserToken = this;
+        //    this._receiveEventArgs.SetBuffer(_asyncReceiveBuffer, 0, _asyncReceiveBuffer.Length);       ///设置接收缓冲区
+        //    this._receiveEventArgs.Completed += new EventHandler<SocketAsyncEventArgs>(this.OnCompleted);
 
-            //this._receiveBuffer = new XfsDynamicBufferManager(this._buffersize);
-            this._asyncReceiveBuffer = new byte[this._buffersize];
-            this._receiveEventArgs = new SocketAsyncEventArgs();
-            this._receiveEventArgs.UserToken = this;
-            this._receiveEventArgs.SetBuffer(_asyncReceiveBuffer, 0, _asyncReceiveBuffer.Length);       ///设置接收缓冲区
-            this._receiveEventArgs.Completed += new EventHandler<SocketAsyncEventArgs>(this.OnCompleted);
-
-            //this._sendBuffer = new XfsDynamicBufferManager(this._buffersize);
-            this._asyncSendBuffer = new byte[this._buffersize];
-            this._sendEventArgs = new SocketAsyncEventArgs();
-            this._sendEventArgs.UserToken = this;
-            this._sendEventArgs.SetBuffer(_asyncSendBuffer, 0, _asyncSendBuffer.Length);                ///设置发送缓冲区
-            this._sendEventArgs.Completed += new EventHandler<SocketAsyncEventArgs>(this.OnCompleted);
-        }
+        //    //this._sendBuffer = new XfsDynamicBufferManager(this._buffersize);
+        //    this._asyncSendBuffer = new byte[this._buffersize];
+        //    this._sendEventArgs = new SocketAsyncEventArgs();
+        //    this._sendEventArgs.UserToken = this;
+        //    this._sendEventArgs.SetBuffer(_asyncSendBuffer, 0, _asyncSendBuffer.Length);                ///设置发送缓冲区
+        //    this._sendEventArgs.Completed += new EventHandler<SocketAsyncEventArgs>(this.OnCompleted);
+        //}
         
         /// 当Socket上的发送或接收请求被完成时，调用此函数///激发事件的对象///与发送或接收完成操作相关联的SocketAsyncEventArg对象
         private void OnCompleted(object sender, SocketAsyncEventArgs e)
@@ -401,18 +424,8 @@ namespace Xfs
 
             this._socket = socket;
             this.SendEventArgs.RemoteEndPoint = this._socket.LocalEndPoint;
-        }
-        public void Init()
-        {
-            ////this.ReadCallback += this.Session.OnRead;
-
-            if (this._socket != null)
-            {
-                this._socket.Shutdown(SocketShutdown.Send);
-                this._socket.Close();
-                this._socket = null;
-            }
-        }
+        }  
+        
         public void Close()
         {
             ////this.ReadCallback -= this.Session.OnRead;
@@ -428,6 +441,7 @@ namespace Xfs
 
             this._socket = null;                                                                //释放引用，并清理缓存，包括释放协议对象等资源
         }
+
         public override void Dispose()
         {
             base.Dispose();
