@@ -24,31 +24,15 @@ namespace Xfs
 	public sealed class XfsSession : XfsEntity
 	{
 		#region 自定义属性
-		private XfsAsyncUserToken? _userToken
+		public XfsAsyncUserToken? UserToken 
 		{
-			get
-			{
-				if (this.GetComponent<XfsAsyncUserToken>() == null)
-				{
-					this.AddComponent<XfsAsyncUserToken>();
-					this.AddComponent<XfsAsyncUserToken>().Close();
-				}
+            get
+            {
 				return this.GetComponent<XfsAsyncUserToken>();
-			}
+            }			
 		}
-		private XfsHeartComponent? _heart
-		{
-			get
-			{
-				if (this.GetComponent<XfsHeartComponent>() == null)
-				{
-					this.AddComponent<XfsHeartComponent>();
-					this.AddComponent<XfsHeartComponent>().Close();
-				}
-				return this.GetComponent<XfsHeartComponent>();
-			}
-		}
-		private XfsNetSocketComponent? _netSocket
+	
+		public XfsNetSocketComponent? NetSocket
 		{
 			get
 			{
@@ -56,13 +40,13 @@ namespace Xfs
 			}
 		}
 		
-		private Socket? _socket
+		public Socket? Socket
 		{
 			get
 			{
-				if (this._userToken != null && this._userToken.Socket!= null)
+				if (this.UserToken != null && this.UserToken.Socket!= null)
 				{
-					return this._userToken.Socket;
+					return this.UserToken.Socket;
                 }
                 else
                 {
@@ -75,9 +59,9 @@ namespace Xfs
 		{
 			get
 			{
-				if (this._socket != null && this.IsRunning == true)
+				if (this.Socket != null && this.IsRunning == true)
 				{
-					return this._socket.RemoteEndPoint as IPEndPoint;
+					return this.Socket.RemoteEndPoint as IPEndPoint;
 				}
 				else
 				{
@@ -88,23 +72,11 @@ namespace Xfs
 		
 		public bool IsRunning { get; set; }
 
-		public bool IsServer
-		{
-			get
-			{
-				return this._netSocket.IsServer;
-			}
-		}
+		public bool IsServer { get; set; }
 
 		public bool IsClosed = false;
 
-		public XfsSenceType SenceType
-		{
-			get
-			{
-				return XfsGame.XfsSence.Type;
-			}
-		}
+		public XfsSenceType SenceType { get; set; }
 		
 		private static int RpcId { get; set; }
 		
@@ -146,13 +118,13 @@ namespace Xfs
 					Console.WriteLine(XfsTimeHelper.CurrentTime() + " 152. XfsSession-message: " + message);
 
 					///将消息发送进消息分流中心
-					if (this._netSocket != null)
+					if (this.NetSocket != null)
 					{
-						if (this._netSocket.MessageDispatcher == null)
+						if (this.NetSocket.MessageDispatcher == null)
 						{
-							this._netSocket.MessageDispatcher = new XfsOuterMessageDispatcher();
+							this.NetSocket.MessageDispatcher = new XfsOuterMessageDispatcher();
 						}
-						this._netSocket.MessageDispatcher.Dispatch(this, opcode, message);
+						this.NetSocket.MessageDispatcher.Dispatch(this, opcode, message);
 					}
 				}
 				return;
@@ -243,9 +215,9 @@ namespace Xfs
 				return;
 			}
 
-			if (this._userToken != null && this._userToken.Socket != null)
+			if (this.UserToken != null && this.UserToken.Socket != null)
 			{
-				this._userToken.Send(message);
+				this.UserToken.Send(message);
 			}
 		}
 		#endregion
@@ -325,50 +297,47 @@ namespace Xfs
 
 		#region ReceiveAsync Init Close
 		public void ReceiveAsync(Socket socket)
-        {
-			this.Init(socket);
-        }
-
-		public void Init(Socket socket)
 		{
+			this.SenceType = XfsGame.XfsSence.Type;
+			this.IsServer = XfsGame.XfsSence.IsServer;
 			this.IsClosed = false;
 			this.IsRunning = true;
-			this.requestCallback.Clear();
 
 			///添加心跳包
-			this._heart.Init();
-			this._userToken.Init(socket);
-
-			if (this._netSocket != null)
+			if (this.GetComponent<XfsHeartComponent>() == null)
 			{
-				if (this._netSocket.Sessions.TryGetValue(this.InstanceId, out XfsSession? ssion))
-				{
-					this._netSocket.Sessions.Remove(ssion.InstanceId);
-					ssion.Close();
-				}
-				///加入会话字典
-				this._netSocket.Sessions.Add(this.InstanceId, this);
-
-				Console.WriteLine(XfsTimeHelper.CurrentTime() + " 一个Session : 开始连接, 会话数量: " + this._netSocket.Sessions.Count + " . ");
-				Console.WriteLine(XfsTimeHelper.CurrentTime() + " 一个Session : 会话池子数量: " + this._netSocket._sessionPool.Count + " . ");
+				this.AddComponent<XfsHeartComponent>();
 			}
+			this.GetComponent<XfsHeartComponent>().Init();
 
-			///如果有消息包投递过来，则开始接收消息包
-			if (!socket.ReceiveAsync(this._userToken.ReceiveEventArgs))//投递接收请求
+			if (this.GetComponent<XfsAsyncUserToken>() == null)
 			{
-				this._userToken.ProcessReceive(this._userToken.ReceiveEventArgs);
+				this.AddComponent<XfsAsyncUserToken>();
+			}
+			this.GetComponent<XfsAsyncUserToken>().Init(socket);
+
+			///Client，如果服户端有消息包投递过来，则开始接收消息包
+			if (!socket.ReceiveAsync(this.GetComponent<XfsAsyncUserToken>().ReceiveEventArgs))//投递接收请求
+			{
+				this.GetComponent<XfsAsyncUserToken>().ProcessReceive(this.GetComponent<XfsAsyncUserToken>().ReceiveEventArgs);
 			}
 		}
-
+	
 		public void Close()
 		{
 			if (this.IsClosed)
 			{
 				return;
-			}
+			}			
 
-			this._heart.Close();
-			this._userToken.Close();
+			if (this.GetComponent<XfsHeartComponent>() != null)
+			{
+				this.GetComponent<XfsHeartComponent>().Close();
+			}
+			if (this.GetComponent<XfsAsyncUserToken>() != null)
+			{
+				this.GetComponent<XfsAsyncUserToken>().Close();
+			}
 
 			foreach (Action<IXfsResponse> action in this.requestCallback.Values.ToArray())
 			{
@@ -376,26 +345,24 @@ namespace Xfs
 			}
 			this.requestCallback.Clear();
 
-			if (this._netSocket != null)
+			if (this.NetSocket != null)
 			{
 				///从会话列表中移除
-				this._netSocket.Sessions.Remove(this.InstanceId);
+				this.NetSocket.Remove(this.InstanceId);
 
 				///回收到Session池里
-				this._netSocket._sessionPool.Push(this);
-
-				Console.WriteLine(XfsTimeHelper.CurrentTime() + " 一个Session : 结束通话, 会话数量: " + this._netSocket.Sessions.Count + " . ");
-				Console.WriteLine(XfsTimeHelper.CurrentTime() + " 一个Session : 会话池子数量: " + this._netSocket._sessionPool.Count + " . ");
+				this.NetSocket._sessionPool.Push(this);
 
 				///如果是客户端，修改客户端的状态为没运行，没连结，然后客户端会自动自动重连
-				if (!this._netSocket.IsServer)
+				if (!this.NetSocket.IsServer)
 				{
-					this._netSocket.IsRunning = false;
+					this.NetSocket.IsRunning = false;
 				}
+
 			}
 
 			this.IsClosed = true;
-			this.IsRunning = false;
+			this.IsRunning = false;			
 		}
 
 		public override void Dispose()

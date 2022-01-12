@@ -179,14 +179,47 @@ namespace Xfs
         #endregion
 
         #region Add Remove///    
-        private void UseSession(Socket socket)
+        public virtual void UseSession(Socket socket)
         {
             XfsSession? session = _sessionPool.Pop(this);
             if (session == null) return;
 
-            ///会话开始接收
-            session.ReceiveAsync(socket);            
-        }      
+            session.ReceiveAsync(socket); 
+
+            ///加入会话字典
+            this.Add(session);           
+        }
+
+        public virtual void ColseSession(XfsSession session)
+        {
+            if (session.IsClosed)
+            {
+                return;
+            }
+
+            session.Close();
+        }
+        
+        public virtual void Add(XfsSession session)
+        {
+            if (this.Sessions.TryGetValue(session.InstanceId, out XfsSession? ses))
+            {
+                this.Sessions.Remove(ses.InstanceId);
+            }
+            this.Sessions.Add(session.InstanceId, session);
+
+            Console.WriteLine(XfsTimeHelper.CurrentTime() + " 一个Session : 开始连接, Sessions: " + XfsGame.XfsSence.GetComponent<XfsNetOuterComponent>().Sessions.Count);
+            Console.WriteLine(XfsTimeHelper.CurrentTime() + " 一个Session : 会话池子数量: " + XfsGame.XfsSence.GetComponent<XfsNetOuterComponent>()._sessionPool.Count);
+
+        }
+
+        public void Remove(long instanceId)
+        {
+            this.Sessions.Remove(instanceId);
+
+            Console.WriteLine(XfsTimeHelper.CurrentTime() + " 一个Session : 已经中断连接, Sessions: " + XfsGame.XfsSence.GetComponent<XfsNetOuterComponent>().Sessions.Count);
+            Console.WriteLine(XfsTimeHelper.CurrentTime() + " 一个Session : 会话池子数量: " + XfsGame.XfsSence.GetComponent<XfsNetOuterComponent>()._sessionPool.Count);
+        }
         #endregion
 
         #region Dispose///
